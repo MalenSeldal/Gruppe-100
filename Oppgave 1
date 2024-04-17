@@ -1,0 +1,33 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+def A(t):
+    return np.array([[np.cos(t), -np.sin(t)], [np.cos(t) + np.sin(t), 0]])
+
+def euler(f, x0, a, b, N):
+    t = np.linspace(a, b, N)
+    h = (b - a) / N
+    x = np.zeros((N, x0.size))
+    x[0, :] = x0
+    for i in range(N - 1):
+        x[i + 1, :] = x[i, :] + h * f(x[i, :], t[i])
+    return x, t
+
+def f(x, t):
+    return A(t) @ x
+
+u0 = np.array([1, 0])
+
+u, t = euler(f, u0, 0, 10, 100000)
+
+# Find min and max values within initial conditions
+x_min = min(u0[0], np.min(u[:, 0]))
+x_max = max(u0[0], np.max(u[:, 0]))
+y_min = min(u0[1], np.min(u[:, 1]))
+y_max = max(u0[1], np.max(u[:, 1]))
+
+fig, ax = plt.subplots()
+ax.plot(u[:, 0], u[:, 1])
+ax.set_xlim([x_min, x_max])
+ax.set_ylim([y_min, y_max])
+plt.show()
