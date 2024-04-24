@@ -1,0 +1,58 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import scipy.sparse as sp
+import scipy.sparse.linalg as lin
+
+
+#Definerer parametere
+size = 50  #Størrelse på gridden
+iterations = 5000  #Nummer av itterasjonener, redusert her for å øke hastigheten
+a_value = 1.0  #Inngangshastigheten
+b_value = -1.0  #Utgangshastigheten
+inlet_position = (size // 2) - 1  #Inngangsposisjon / væsketilførsel posisjonen
+outlet_position = (size // 2) - 1  #Utgangsposisjon / Væskeutgangen posisjon
+opening_size = size // 10  #Størelsen på inn- og utgang
+dx = 1
+#Initialiserer gridden
+phi = np.zeros((size, size))
+#Løser for hver itterasjon
+for _ in range(iterations):
+    phi_old = phi.copy()
+    phi[1:-1, 1:-1] = 0.25 * (phi_old[1:-1, :-2] + phi_old[1:-1, 2:] + phi_old[:-2, 1:-1] + phi_old[2:, 1:-1])
+
+    #Setter Neumanns randbetingelser
+    phi[1:-1, 0] = phi[1:-1, 1]  #Venstre vegg
+    phi[1:-1, -1] = phi[1:-1, -2]  # Høyrevegg
+    phi[0, :] = phi[1, :]  #Topp vegg
+    phi[-1, :] = phi[-2, :]  #Bunn vegg
+
+
+    phi[0, inlet_position:inlet_position + opening_size] = phi[1, inlet_position:inlet_position + opening_size] + a_value * dx
+    phi[-1, outlet_position:outlet_position + opening_size] = phi[-2, outlet_position:outlet_position + opening_size] + b_value * dx
+
+#Plotter oppgave A
+Y, X = np.meshgrid(range(phi.shape[0]), range(phi.shape[1]))
+fig = plt.figure(figsize=(14, 7))
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_surface(X, Y, phi, rstride=1, cstride=1, cmap='viridis', linewidth=0, antialiased=False)
+fig.colorbar(surf, shrink=0.5, aspect=5)
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Potential φ')
+plt.show()
+
+
+#Oppgave B
+u = -np.gradient(phi, axis=1)
+v = -np.gradient(phi, axis=0)
+
+Y, X = np.mgrid[0:phi.shape[0], 0:phi.shape[1]]
+
+#Plotter oppgave C
+plt.figure(figsize=(10, 8))
+plt.streamplot(X, Y, u, v, density=2)
+plt.title('Strømlinjer')
+plt.xlabel('X coordinate')
+plt.ylabel('Y coordinate')
+plt.show()
