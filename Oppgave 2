@@ -1,7 +1,4 @@
 
-​
-Malene Seldal
-​
 #oppgave 2a
 
 from sympy import exp, symbols, diff
