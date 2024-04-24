@@ -1,0 +1,230 @@
+
+​
+Malene Seldal
+​
+#oppgave 2a
+
+from sympy import exp, symbols, diff
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Definerer symbolene
+x, t, v = symbols('x t v')
+
+# Definerer funksjonen
+u = 2 / (1 + exp((x - t) / v))
+
+# Partiell derivasjon med hensyn til x
+du_dx = diff(u, x)
+
+# Partiell derivasjon med hensyn til t
+du_dt = diff(u, t)
+
+# Partiell derivasjon med hensyn til x^2
+du2_d2x = diff(du_dx, x)
+
+print(du_dx)
+print(du_dt)
+print(du2_d2x)
+print('')
+
+equation = du_dt + u * du_dx - v * du2_d2x
+
+# Forenkler ligningen for å se om den er lik 0
+simplified_equation = equation.simplify()
+
+print(simplified_equation)
+print('')
+
+
+
+
+
+
+#forkjellige viskositeter til 2b
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Definer funksjonen u(x, t, v) som gitt i problemstillingen
+def u(x, t, v):
+    return 2 / (1 + np.exp((x - t) / v))
+
+# Definer verdier for x og de gitte verdiene for t og v
+x_verdier = np.linspace(-10, 10, 400)
+t = 0  # vi kan plotte for t = 0 som per den initielle tilstanden
+v_verdier = [0, 0.1, 0.5, 1, 5, 10, 1000]  # forskjellige verdier av v for å plotte
+
+# Plot løsningen for forskjellige verdier av v
+plt.figure(figsize=(10, 6))
+for v in v_verdier:
+    plt.plot(x_verdier, u(x_verdier, t, v), label=f'v = {v}')
+
+plt.title('Løsning av Burgers-ligningen for forskjellige verdier av v')
+plt.xlabel('x')
+plt.ylabel('u(x, t)')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+
+#kode for oppgave 2 c
+
+import numpy as np
+
+# Parametere
+L = 10              # Lengden på romdomenet
+T = 2               # Total tid
+m = 100            # Antall romlige punkter
+n = 100          # Antall tidssteg
+x = np.linspace(0, L, m)
+t = np.linspace(0, T, n)
+h = L / (m - 1)     # Romlig steglengde
+k = T / (n - 1)     # Tidssteglengde
+v = 0.1             # Viskositet
+
+# Initialiserer løsningsmatrisen
+u = np.zeros((n, m))
+
+# Initialbetingelser (for eksempel u(t=0, x) = sin(pi*x/L))
+u[0, :] = np.sin(np.pi * x / L)
+
+# Randbetingelser (for eksempel u(t, x=0) = u(t, x=L) = 0)
+u[:, 0] = 0
+u[:, -1] = 0
+
+# Tidsintegrasjon med Eulers metode og sentral differanse
+for i in range(1, n):
+    for j in range(1, m - 1):
+        u_t = (u[i-1, j] - u[i-2, j]) / k if i > 1 else (u[i, j] - u[i-1, j]) / k
+        u_x = (u[i-1, j+1] - u[i-1, j-1]) / (2*h)
+        u_xx = (u[i-1, j+1] - 2*u[i-1, j] + u[i-1, j-1]) / h**2
+        u[i, j] = u[i-1, j] - k * (u[i-1, j] * u_x - v * u_xx)
+
+# Initialiserer en matrise for å lagre residualen
+residuals = np.zeros((n, m))
+
+# Tidsintegrasjon og residualberegning
+for i in range(1, n):
+    for j in range(1, m - 1):
+        u_t = (u[i, j] - u[i-1, j]) / k
+        u_x = (u[i-1, j+1] - u[i-1, j-1]) / (2*h)
+        u_xx = (u[i-1, j+1] - 2*u[i-1, j] + u[i-1, j-1]) / h**2
+        residuals[i, j] = u_t + u[i-1, j] * u_x - v * u_xx
+
+# Etter tidsintegrasjonen kan du analysere residualene
+# For eksempel ved å printe maksimal absolutt verdi av residualen
+max_residual = np.max(np.abs(residuals))
+print(f'Maximal absolutt residual: {max_residual}')
+
+
+
+
+#kode til sammenlikning av 2c og 2d
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Definer parametere
+L = 10.0  # lengden på romdomenet
+T = 2.0  # total tid
+m = 100  # antall romlige punkter
+n = 100  # antall tidssteg
+dx = L / (m - 1)  # romlig steglengde
+dt = T / (n - 1)  # tidssteglengde
+v = 0
+
+
+# Initialiser domenet
+x = np.linspace(0, L, m)
+t = np.linspace(0, T, n)
+
+# Initialbetingelser
+def initial_conditions(x):
+    return np.sin(np.pi * x / L)
+
+# Initialiser løsningsmatrisene
+u_visc = np.zeros((n, m))
+u_invisc = np.zeros((n, m))
+u_visc[0, :] = initial_conditions(x)
+u_invisc[0, :] = initial_conditions(x)
+
+# FTCS metode for Burgers' ligning med viskositet (Oppgave 2c)
+for i in range(1, n):
+    for j in range(1, m-1):
+        u_x = (u_visc[i-1, j+1] - u_visc[i-1, j-1]) / (2 * dx)
+        u_xx = (u_visc[i-1, j+1] - 2*u_visc[i-1, j] + u_visc[i-1, j-1]) / (dx**2)
+        u_visc[i, j] = u_visc[i-1, j] - dt * u_visc[i-1, j] * u_x + v * dt * u_xx
+
+# Lax-Friedrichs metode for ikke-viskøs Burgers' ligning (Oppgave 2d)
+for i in range(1, n):
+    for j in range(1, m-1):
+        u_invisc[i, j] = 0.5 * (u_invisc[i-1, j+1] + u_invisc[i-1, j-1]) \
+                       - dt / (2 * dx) * (u_invisc[i-1, j+1]**2 - u_invisc[i-1, j-1]**2) / 2
+
+# Beregn maksimale absolutte residualer for begge metoder
+res_visc = np.max(np.abs(u_visc[-1, :] - initial_conditions(x)))
+res_invisc = np.max(np.abs(u_invisc[-1, :] - initial_conditions(x)))
+
+print(f'Maksimalt residual for viskøs løsning: {res_visc}')
+print(f'Maksimalt residual for ikke-viskøs løsning: {res_invisc}')
+
+# Plot løsningene for visualisering
+plt.figure(figsize=(10, 5))
+plt.plot(x, u_visc[-1, :], label='Viskøs (FTCS)')
+plt.plot(x, u_invisc[-1, :], label='Ikke-viskøs (Lax-Friedrichs)', linestyle='--')
+plt.legend()
+plt.title('Sammenligning av viskøs og ikke-viskøs løsning ved t=T for')
+plt.xlabel('Posisjon (x)')
+plt.ylabel('Hastighet (u)')
+plt.show()
+
+
+
+
+#oppgave 2e
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parametere
+L = 10.0  # Lengden på domenet
+m = 100  # Antall romlige punkter
+x = np.linspace(0, L, m)
+dx = L / (m - 1)
+dt = 0.01  # Tidssteg, velg en verdi som tilfredsstiller CFL-betingelsen
+T = 1.0  # Total tid til simuleringen
+N = int(T/dt)
+u = np.zeros(m)
+
+# Initialbetingelser
+for i in range(m):
+    if x[i] < L/2:
+        u[i] = 2
+    else:
+        u[i] = 1
+
+def godunov_flux(ul, ur):
+    # Enkel Godunov-flux for Burgers' ligning, antar at sjokk beveger seg mot høyre
+    if ul <= ur:
+        return min(ul**2/2, ur**2/2)
+    else:
+        return max(ul**2/2, ur**2/2)
+
+# Tidsutvikling
+for n in range(N):
+    u_new = np.zeros(m)
+    for i in range(1, m-1):
+        fl = godunov_flux(u[i-1], u[i])
+        fr = godunov_flux(u[i], u[i+1])
+        u_new[i] = u[i] - dt/dx*(fr - fl)
+    u = u_new
+
+plt.plot(x, u, label='Godunov metode')
+plt.title('Løsning av Burgers-ligningen med Godunov-metoden')
+plt.xlabel('x')
+plt.ylabel('u')
+plt.legend()
+plt.show()
