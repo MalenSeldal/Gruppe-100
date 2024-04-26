@@ -130,7 +130,7 @@ m = 100  # antall romlige punkter
 n = 100  # antall tidssteg
 dx = L / (m - 1)  # romlig steglengde
 dt = T / (n - 1)  # tidssteglengde
-v = 0
+v = 0 # Denne kan endres for å teste hvor burgers og lax nærmer seg. Tester med 0.25 senere
 
 
 # Initialiser domenet
@@ -164,15 +164,25 @@ for i in range(1, n):
 res_visc = np.max(np.abs(u_visc[-1, :] - initial_conditions(x)))
 res_invisc = np.max(np.abs(u_invisc[-1, :] - initial_conditions(x)))
 
-print(f'Maksimalt residual for viskøs løsning: {res_visc}')
-print(f'Maksimalt residual for ikke-viskøs løsning: {res_invisc}')
+print(f'Maksimalt residual for løsning med FTCS metoden: {res_visc}')
+print(f'Maksimalt residual for løsning med Lax-Friedrichs metoden: {res_invisc}')
 
-# Plot løsningene for visualisering
+# Plot løsningene for visualisering ved v=0
 plt.figure(figsize=(10, 5))
-plt.plot(x, u_visc[-1, :], label='Viskøs (FTCS)')
-plt.plot(x, u_invisc[-1, :], label='Ikke-viskøs (Lax-Friedrichs)', linestyle='--')
+plt.plot(x, u_visc[-1, :], label='Løsning med FTCS metoden')
+plt.plot(x, u_invisc[-1, :], label='Løsning med Lax-Friedrichs metoden', linestyle='--')
 plt.legend()
-plt.title('Sammenligning av viskøs og ikke-viskøs løsning ved t=T for')
+plt.title('Sammenligning av løsninger ved t=T for v=0')
+plt.xlabel('Posisjon (x)')
+plt.ylabel('Hastighet (u)')
+plt.show()
+
+# Plot løsningene for visualisering ved v=0.25
+plt.figure(figsize=(10, 5))
+plt.plot(x, u_visc[-1, :], label='Løsning med FTCS metoden')
+plt.plot(x, u_invisc[-1, :], label='Løsning med Lax-Friedrichs metoden', linestyle='--')
+plt.legend()
+plt.title('Sammenligning av løsninger ved t=T for v=0.25')
 plt.xlabel('Posisjon (x)')
 plt.ylabel('Hastighet (u)')
 plt.show()
